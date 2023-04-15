@@ -1,0 +1,26 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    if: startsWith(github.ref, 'refs/heads/') && contains(github.event.head_commit.message, '#deploy')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Install dependencies
+        run: yarn install
+      - name: Build React app
+        run: yarn build
+      - name: Deploy to server
+        uses: easingthemes/ssh-deploy@v2.2.5
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        with:
+          server: ${{ secrets.SERVER }}
+          username: ${{ secrets.USERNAME }}
+          destination: ${{ secrets.DIST }}
+          source: build/
